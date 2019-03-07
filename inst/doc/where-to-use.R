@@ -5,6 +5,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height
 library(parsnip)
 library(probably)
 library(dplyr)
+library(rsample)
 data("lending_club")
 
 # I think it makes more sense to have "good" as the first level
@@ -21,12 +22,11 @@ lending_club
 ## ------------------------------------------------------------------------
 # 70% train, 30% test
 set.seed(123)
-n <- nrow(lending_club)
-prop_train <- .7
-train_idx <- sample(seq_len(n), floor(.7 * n))
 
-lending_train <- lending_club[train_idx,]
-lending_test  <- lending_club[-train_idx,]
+split <- initial_split(lending_club, prop = 0.7)
+
+lending_train <- training(split)
+lending_test  <- testing(split)
 
 ## ------------------------------------------------------------------------
 count(lending_train, Class)

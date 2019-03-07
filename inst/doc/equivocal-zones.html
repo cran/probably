@@ -12,14 +12,14 @@
 
 <meta name="author" content="Davis Vaughan" />
 
-<meta name="date" content="2018-12-09" />
+<meta name="date" content="2019-03-07" />
 
 <title>Equivocal zones</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
 a.sourceLine:empty { height: 1.2em; }
@@ -81,7 +81,29 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -278,7 +300,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Equivocal zones</h1>
 <h4 class="author"><em>Davis Vaughan</em></h4>
-<h4 class="date"><em>2018-12-09</em></h4>
+<h4 class="date"><em>2019-03-07</em></h4>
 
 
 
@@ -384,15 +406,17 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">segment_pred <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb5-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.pred_fct =</span> <span class="kw">as.factor</span>(.pred)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb5-3" data-line-number="3"><span class="st">  </span><span class="kw">count</span>(.pred, .pred_fct)</a>
-<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt; # A tibble: 3 x 3</span></a>
-<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt;        .pred .pred_fct     n</span></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt;   &lt;clss_prd&gt; &lt;fct&gt;     &lt;int&gt;</span></a>
-<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt; 1       [EQ] &lt;NA&gt;         45</span></a>
-<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt; 2       good good        340</span></a>
-<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt; 3       poor poor        625</span></a>
-<a class="sourceLine" id="cb5-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="kw">levels</span>(segment_pred<span class="op">$</span>.pred)</a>
-<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; [1] &quot;good&quot; &quot;poor&quot;</span></a></code></pre></div>
+<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt; Warning: Factor `.pred_fct` contains implicit NA, consider using</span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt; `forcats::fct_explicit_na`</span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt; # A tibble: 3 x 3</span></a>
+<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;        .pred .pred_fct     n</span></a>
+<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt;   &lt;clss_prd&gt; &lt;fct&gt;     &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt; 1       [EQ] &lt;NA&gt;         45</span></a>
+<a class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt; 2       good good        340</span></a>
+<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt; 3       poor poor        625</span></a>
+<a class="sourceLine" id="cb5-12" data-line-number="12"></a>
+<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="kw">levels</span>(segment_pred<span class="op">$</span>.pred)</a>
+<a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">#&gt; [1] &quot;good&quot; &quot;poor&quot;</span></a></code></pre></div>
 <p>This <code>NA</code> behavior feeds into how probably can be used with yardstick. Generally, equivocal values are removed completely from performance evaluation. So converting them to <code>NA</code> and then leaving the default <code>na_rm = TRUE</code> in any yardstick metric removes them from consideration.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">library</span>(yardstick)</a>
 <a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">#&gt; For binary classification, the first factor level is assumed to be the event.</span></a>
