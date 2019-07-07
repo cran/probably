@@ -20,10 +20,10 @@ lending_club <- select(lending_club, Class, annual_inc, verification_status, sub
 lending_club
 
 ## ------------------------------------------------------------------------
-# 70% train, 30% test
+# 75% train, 25% test
 set.seed(123)
 
-split <- initial_split(lending_club, prop = 0.7)
+split <- initial_split(lending_club, prop = 0.75)
 
 lending_train <- training(split)
 lending_test  <- testing(split)
@@ -73,6 +73,9 @@ hard_pred_0.75 <- lending_test_pred %>%
 
 hard_pred_0.75 %>% 
   count(.truth = Class, .pred)
+
+## ---- echo=FALSE---------------------------------------------------------
+correct_bad <- nrow(filter(hard_pred_0.75, Class == "bad", .pred == "bad"))
 
 ## ------------------------------------------------------------------------
 library(yardstick)
