@@ -1,5 +1,5 @@
 Package: probably
-Version: 0.0.3
+Version: 0.0.4
 Title: Tools for Post-Processing Class Probability Estimates
 Description: Models can be improved by post-processing class probabilities, by: recalibration, conversion to hard probabilities, assessment of equivocal zones, and other activities. 'probably' contains tools for conducting these operations. 
 Authors@R: c(
@@ -12,17 +12,18 @@ License: GPL-2
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Depends: R (>= 2.10)
 Imports: dplyr, generics, rlang (>= 0.4.0), tidyselect, vctrs (>=
         0.2.0), yardstick
-Suggests: covr, ggplot2, knitr, parsnip, rmarkdown, rsample, testthat
+Suggests: covr, ggplot2, knitr, modeldata, parsnip, rmarkdown, rsample,
+        testthat
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2019-07-07 12:01:32 UTC; davis
+Packaged: 2020-01-13 16:30:20 UTC; davis
 Author: Max Kuhn [aut],
   Davis Vaughan [aut, cre],
   RStudio [cph]
 Maintainer: Davis Vaughan <davis@rstudio.com>
 Repository: CRAN
-Date/Publication: 2019-07-07 22:40:03 UTC
+Date/Publication: 2020-01-13 17:00:05 UTC

@@ -1,11 +1,12 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 6, fig.align = "center")
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 library(parsnip)
 library(probably)
 library(dplyr)
 library(rsample)
+library(modeldata)
 data("lending_club")
 
 # I think it makes more sense to have "good" as the first level
@@ -19,7 +20,7 @@ lending_club <- select(lending_club, Class, annual_inc, verification_status, sub
 
 lending_club
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # 75% train, 25% test
 set.seed(123)
 
@@ -28,10 +29,10 @@ split <- initial_split(lending_club, prop = 0.75)
 lending_train <- training(split)
 lending_test  <- testing(split)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 count(lending_train, Class)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 logi_reg <- logistic_reg()
 logi_reg_glm <- logi_reg %>% set_engine("glm")
 
@@ -48,7 +49,7 @@ logi_reg_fit <- fit(
 
 logi_reg_fit
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 predictions <- logi_reg_fit %>%
   predict(new_data = lending_test, type = "prob")
 
@@ -58,7 +59,7 @@ lending_test_pred <- bind_cols(predictions, lending_test)
 
 lending_test_pred
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 hard_pred_0.5 <- lending_test_pred %>%
   mutate(.pred = make_two_class_pred(.pred_good, levels(Class), threshold = .5)) %>%
   select(Class, contains(".pred"))
@@ -66,7 +67,7 @@ hard_pred_0.5 <- lending_test_pred %>%
 hard_pred_0.5 %>% 
   count(.truth = Class, .pred)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 hard_pred_0.75 <- lending_test_pred %>%
   mutate(.pred = make_two_class_pred(.pred_good, levels(Class), threshold = .75)) %>%
   select(Class, contains(".pred"))
@@ -74,10 +75,10 @@ hard_pred_0.75 <- lending_test_pred %>%
 hard_pred_0.75 %>% 
   count(.truth = Class, .pred)
 
-## ---- echo=FALSE---------------------------------------------------------
+## ---- echo=FALSE--------------------------------------------------------------
 correct_bad <- nrow(filter(hard_pred_0.75, Class == "bad", .pred == "bad"))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(yardstick)
 
 # Currently yardstick can't deal with the class_pred objects that come from
@@ -91,18 +92,18 @@ spec(hard_pred_0.5, Class, .pred)
 sens(hard_pred_0.75, Class, .pred)
 spec(hard_pred_0.75, Class, .pred)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 j_index(hard_pred_0.5, Class, .pred)
 j_index(hard_pred_0.75, Class, .pred)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 threshold_data <- lending_test_pred %>%
   threshold_perf(Class, .pred_good, thresholds = seq(0.5, 1, by = 0.0025))
 
 threshold_data %>%
   filter(.threshold %in% c(0.5, 0.6, 0.7))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(ggplot2)
 
 threshold_data <- threshold_data %>%
@@ -130,7 +131,7 @@ ggplot(threshold_data, aes(x = .threshold, y = .estimate, color = .metric, alpha
     subtitle = "Sensitivity or specificity alone might not be enough!\nVertical line = Max J-Index"
   )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 threshold_data %>%
   filter(.threshold == max_j_index_threshold)
 

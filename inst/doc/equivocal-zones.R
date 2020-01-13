@@ -1,13 +1,13 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 library(probably)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 x <- factor(c("Yes", "No", "Yes", "Yes"))
 
 # Create a class_pred object from a factor
@@ -17,7 +17,7 @@ class_pred(x)
 # You could mark it as equivocal.
 class_pred(x, which = 3)
 
-## ---- message=FALSE, warning=FALSE---------------------------------------
+## ---- message=FALSE, warning=FALSE--------------------------------------------
 library(dplyr)
 data("segment_logistic")
 segment_logistic
@@ -36,7 +36,7 @@ segment_logistic_thresh <- segment_logistic %>%
 
 segment_logistic_thresh
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # Convert probabilities into predictions
 #        x > 0.55 = good
 #        x < 0.45 = poor
@@ -57,14 +57,14 @@ segment_pred %>%
 segment_pred %>%
   summarise(reportable = reportable_rate(.pred))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 segment_pred %>%
   mutate(.pred_fct = as.factor(.pred)) %>%
   count(.pred, .pred_fct)
 
 levels(segment_pred$.pred)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(yardstick)
 
 # No equivocal zone
