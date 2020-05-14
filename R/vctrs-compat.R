@@ -1,3 +1,6 @@
+#' @import vctrs
+NULL
+
 # ------------------------------------------------------------------------------
 # Reexports - from `generics`
 
@@ -14,41 +17,26 @@ generics::as.factor
 generics::as.ordered
 
 # ------------------------------------------------------------------------------
-# R 3.1 imports
-
-# Required R 3.1 imports, otherwise it can't find them
-# through the double dispatch
-#' @importFrom vctrs vec_cast.factor
-#' @importFrom vctrs vec_cast.integer
-NULL
-
-# ------------------------------------------------------------------------------
 # Printing
 
-# Abbreviation used in tibbles and str() (through that, rstudio)
-
 #' @export
-#' @importFrom vctrs vec_ptype_abbr
 vec_ptype_abbr.class_pred <- function(x, ...) {
   "clss_prd"
 }
 
 #' @export
-#' @importFrom vctrs obj_print_header
 obj_print_header.class_pred <- function(x, ...) {
   # no header
   invisible(x)
 }
 
 #' @export
-#' @importFrom vctrs obj_print_data
 obj_print_data.class_pred <- function(x, ...) {
   cat_class_pred(x)
   invisible(x)
 }
 
 #' @export
-#' @importFrom vctrs obj_print_footer
 obj_print_footer.class_pred <- function(x, ...) {
   cat_levels(x)
   cat_reportable(x)
@@ -58,30 +46,8 @@ obj_print_footer.class_pred <- function(x, ...) {
 # ------------------------------------------------------------------------------
 # Casting
 
-# -----------------------
-# Required casts
-
-#' Cast a `class_pred` vector to a specified type
-#'
-#' @inheritParams vctrs::vec_cast
-#'
-#' @export
-#' @method vec_cast class_pred
-#' @export vec_cast.class_pred
-#' @importFrom vctrs vec_cast
-vec_cast.class_pred <- function(x, to, ...) UseMethod("vec_cast.class_pred")
-
-#' @method vec_cast.class_pred default
-#' @export
-#' @importFrom vctrs vec_default_cast
-vec_cast.class_pred.default <- function(x, to, ..., x_arg = "x", to_arg = "to") {
-  vec_default_cast(x, to, x_arg = x_arg, to_arg = to_arg)
-}
-
-#' @method vec_cast.class_pred class_pred
 #' @export
 vec_cast.class_pred.class_pred <- function(x, to, ...) {
-
   # first go class_pred -> factor
   # then recast as class_pred with correct attributes
 
@@ -92,14 +58,9 @@ vec_cast.class_pred.class_pred <- function(x, to, ...) {
   )
 }
 
-# -----------------------
-# Custom casts
-
-# factor -> class_pred, assume no equivocal values
-
-#' @method vec_cast.class_pred factor
 #' @export
 vec_cast.class_pred.factor <- function(x, to, ...) {
+  # Assume no equivocals
   class_pred(
     x = factorish_to_factor(x, to),
     which = integer(),
@@ -107,30 +68,21 @@ vec_cast.class_pred.factor <- function(x, to, ...) {
   )
 }
 
-# class_pred -> factor, equivocals become NAs
-
 #' @export
-#' @importFrom vctrs vec_data
-#' @importFrom vctrs maybe_lossy_cast
 vec_cast.factor.class_pred <- function(x, to, ...) {
   factorish_to_factor(x, to)
 }
 
-# ordered -> class_pred
-
-#' @method vec_cast.class_pred ordered
 #' @export
-vec_cast.class_pred.ordered <- vec_cast.class_pred.factor
+vec_cast.class_pred.ordered <- function(x, to, ...) {
+  vec_cast.class_pred.factor(x, to, ...)
+}
 
-# # fully handled by the vec_cast.factor.class_pred method
-# # no vec_cast.ordered generic will be implemented, see vctrs#96
-# vec_cast.ordered.class_pred <- function(x, to) {
-#   as.ordered(vec_cast.factor.class_pred(x, to))
-# }
+#' @export
+vec_cast.ordered.class_pred <- function(x, to, ...) {
+  factorish_to_factor(x, to)
+}
 
-# character -> class_pred
-
-#' @method vec_cast.class_pred character
 #' @export
 vec_cast.class_pred.character <- function(x, to, ..., x_arg = "x", to_arg = "to") {
   # first cast character -> factor
@@ -139,16 +91,18 @@ vec_cast.class_pred.character <- function(x, to, ..., x_arg = "x", to_arg = "to"
   rethrow_lossy_cast <- function(e) {
     # have to manually recover `lossy` because vctrs 0.2.0 doesn't pass it through (vctrs#483)
     lossy <- !(x %in% levels(to) | is.na(x))
+    # switch to `stop_lossy_cast()` after vctrs#978
     maybe_lossy_cast(e$result, x, to, lossy, x_arg = x_arg, to_arg = to_arg)
   }
 
   out <- tryCatch(
-    expr = vec_cast.factor(
-      x = x,
-      to = factor(levels = levels(to), ordered = is_ordered(to))
-    ),
+    expr = vec_cast.factor(x = x, to = factor(levels = levels(to))),
     vctrs_error_cast_lossy = rethrow_lossy_cast
   )
+
+  if (is_ordered(to)) {
+    out <- as.ordered(out)
+  }
 
   class_pred(
     x = out,
@@ -156,12 +110,9 @@ vec_cast.class_pred.character <- function(x, to, ..., x_arg = "x", to_arg = "to"
   )
 }
 
-# class_pred -> character, equivocals become NA
-
 #' @export
-#' @importFrom vctrs vec_data
 vec_cast.character.class_pred <- function(x, to, ...) {
-  x_data <- vec_data(x)
+  x_data <- unclass(x)
   x_data[is_equivocal(x)] <- NA_integer_
   lvls <- levels(x)
   lvls[x_data]
@@ -201,36 +152,10 @@ factorish_to_factor <- function(x, to, ..., x_arg = "", to_arg = "") {
 # ------------------------------------------------------------------------------
 # Coercion
 
-# -----------------------
-# Required coercion
-
-#' Find the common type for a `class_pred` and another object
-#'
-#' @inheritParams vctrs::vec_ptype2
-#'
-#' @export
-#' @method vec_ptype2 class_pred
-#' @export vec_ptype2.class_pred
-#' @importFrom vctrs vec_ptype2
-vec_ptype2.class_pred <- function(x, y, ...) {
-  UseMethod("vec_ptype2.class_pred", y)
-}
-
-#' @method vec_ptype2.class_pred default
-#' @export
-#' @importFrom vctrs vec_default_ptype2
-vec_ptype2.class_pred.default <- function(x, y, ..., x_arg = "x", y_arg = "y") {
-  vec_default_ptype2(x, y, x_arg = x_arg, y_arg = y_arg)
-}
-
-# -----------------------
-# Custom coercion
-
 # class_pred + class_pred = class_pred with unioned labels
 # it is ordered if either are ordered
 # the new eq label always comes from x
 
-#' @method vec_ptype2.class_pred class_pred
 #' @export
 vec_ptype2.class_pred.class_pred <- function(x, y, ...) {
   new_class_pred(
@@ -241,7 +166,6 @@ vec_ptype2.class_pred.class_pred <- function(x, y, ...) {
   )
 }
 
-#' @method vec_ptype2.class_pred factor
 #' @export
 vec_ptype2.class_pred.factor <- function(x, y, ...) {
   new_class_pred(
@@ -253,7 +177,6 @@ vec_ptype2.class_pred.factor <- function(x, y, ...) {
 }
 
 #' @export
-#' @importFrom vctrs vec_ptype2.factor
 vec_ptype2.factor.class_pred <- function(x, y, ...) {
   new_class_pred(
     x = integer(),
@@ -263,14 +186,12 @@ vec_ptype2.factor.class_pred <- function(x, y, ...) {
   )
 }
 
-#' @method vec_ptype2.class_pred character
 #' @export
 vec_ptype2.class_pred.character <- function(x, y, ...) {
   character()
 }
 
 #' @export
-#' @importFrom vctrs vec_ptype2.character
 vec_ptype2.character.class_pred <- function(x, y, ...) {
   character()
 }
@@ -289,22 +210,14 @@ union_ordered <- function(x, y) {
 # ------------------------------------------------------------------------------
 # Comparison and equality
 
-#' Equality for `class_pred`
-#'
-#' `class_pred` objects are converted to integer before equality checks
-#' are done.
-#'
 #' @export
-#' @importFrom vctrs vec_proxy_equal
-#' @keywords internal
 vec_proxy_equal.class_pred <- function(x, ...) {
   # allows you to compare two class_pred objects robustly
   # converting to character would confuse NA with equivocal
-  vec_data(x)
+  unclass(x)
 }
 
 #' @export
-#' @importFrom vctrs vec_proxy_compare
 vec_proxy_compare.class_pred <- function(x, ...) {
   abort("Comparisons with `class_pred` objects are not meaningful.")
 }

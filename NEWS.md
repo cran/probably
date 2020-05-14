@@ -1,3 +1,7 @@
+# probably 0.0.5
+
+* Internal cleanup to be more compatible with vctrs 0.3.0.
+
 # probably 0.0.4
 
 * Suggest the modeldata package, which is where the `lending_club` dataset has been moved after being removed from recipes.

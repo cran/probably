@@ -2,7 +2,6 @@
 # ------------------------------------------------------------------------------
 # Creation
 
-#' @importFrom vctrs new_vctr
 new_class_pred <- function(x, labels, ordered = FALSE, equivocal = "[EQ]", ..., subclass = NULL) {
 
   stopifnot(is.integer(x))
@@ -51,7 +50,6 @@ new_class_pred <- function(x, labels, ordered = FALSE, equivocal = "[EQ]", ..., 
 #' class_pred(x, which = 3, equivocal = "eq_value")
 #'
 #' @export
-#' @importFrom vctrs vec_cast
 class_pred <- function(x = factor(), which = integer(), equivocal = "[EQ]") {
 
   # Check invariants
@@ -202,7 +200,7 @@ is_equivocal.default <- function(x) {
 
 #' @export
 is_equivocal.class_pred <- function(x) {
-  is_0 <- vec_data(x) == 0L
+  is_0 <- unclass(x) == 0L
 
   # NA values are also FALSE
   is_0[is.na(is_0)] <- FALSE
@@ -225,7 +223,6 @@ which_equivocal.default <- function(x) {
 }
 
 #' @export
-#' @importFrom vctrs vec_data
 which_equivocal.class_pred <- function(x) {
   which(is_equivocal(x))
 }
