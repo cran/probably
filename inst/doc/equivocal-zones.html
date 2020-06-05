@@ -12,7 +12,7 @@
 
 <meta name="author" content="Davis Vaughan" />
 
-<meta name="date" content="2020-05-14" />
+<meta name="date" content="2020-06-05" />
 
 <title>Equivocal zones</title>
 
@@ -315,7 +315,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Equivocal zones</h1>
 <h4 class="author">Davis Vaughan</h4>
-<h4 class="date">2020-05-14</h4>
+<h4 class="date">2020-06-05</h4>
 
 
 
@@ -421,17 +421,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>segment_pred <span class="op">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.pred_fct =</span> <span class="kw">as.factor</span>(.pred)) <span class="op">%&gt;%</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="st">  </span><span class="kw">count</span>(.pred, .pred_fct)</span>
-<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#&gt; Warning: Factor `.pred_fct` contains implicit NA, consider using</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#&gt; `forcats::fct_explicit_na`</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt; # A tibble: 3 x 3</span></span>
-<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt;        .pred .pred_fct     n</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt;   &lt;clss_prd&gt; &lt;fct&gt;     &lt;int&gt;</span></span>
-<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&gt; 1       [EQ] &lt;NA&gt;         45</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#&gt; 2       good good        340</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a><span class="co">#&gt; 3       poor poor        625</span></span>
-<span id="cb5-12"><a href="#cb5-12"></a></span>
-<span id="cb5-13"><a href="#cb5-13"></a><span class="kw">levels</span>(segment_pred<span class="op">$</span>.pred)</span>
-<span id="cb5-14"><a href="#cb5-14"></a><span class="co">#&gt; [1] &quot;good&quot; &quot;poor&quot;</span></span></code></pre></div>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#&gt; # A tibble: 3 x 3</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#&gt;        .pred .pred_fct     n</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#&gt;   &lt;clss_prd&gt; &lt;fct&gt;     &lt;int&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; 1       [EQ] &lt;NA&gt;         45</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt; 2       good good        340</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&gt; 3       poor poor        625</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="kw">levels</span>(segment_pred<span class="op">$</span>.pred)</span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">#&gt; [1] &quot;good&quot; &quot;poor&quot;</span></span></code></pre></div>
 <p>This <code>NA</code> behavior feeds into how probably can be used with yardstick. Generally, equivocal values are removed completely from performance evaluation. So converting them to <code>NA</code> and then leaving the default <code>na_rm = TRUE</code> in any yardstick metric removes them from consideration.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">library</span>(yardstick)</span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="co">#&gt; For binary classification, the first factor level is assumed to be the event.</span></span>
