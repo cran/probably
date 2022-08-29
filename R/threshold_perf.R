@@ -31,6 +31,9 @@
 #' of values between 0.5 and 1.0 are used. **Note**: if this
 #' argument is used, it must be named.
 #'
+#' @param event_level A single string. Either `"first"` or `"second"` to specify
+#' which level of `truth` to consider as the "event".
+#'
 #' @return A tibble with columns: `.threshold`, `.estimator`, `.metric`,
 #' `.estimate` and any existing groups.
 #'
@@ -79,27 +82,32 @@ threshold_perf <- function(.data, ...) {
 }
 
 #' @rdname threshold_perf
-#' @importFrom tidyselect vars_select
-#' @importFrom dplyr rename select mutate group_by do summarise
-#' @importFrom dplyr %>% tibble ungroup
-#' @importFrom stats na.omit
 #' @export
 threshold_perf.data.frame <- function(.data,
                                       truth,
                                       estimate,
                                       thresholds = NULL,
                                       na_rm = TRUE,
+                                      event_level = "first",
                                       ...) {
 
   if (is.null(thresholds)) {
     thresholds <- seq(0.5, 1, length = 21)
   }
 
-  nms   <- names(.data)
-  obs   <- tidyselect::vars_select(nms, !!enquo(truth))
-  probs <- tidyselect::vars_select(nms, !!enquo(estimate))
-  rs_ch <- dplyr::group_vars(.data)
+  obs_sel <- tidyselect::eval_select(
+    expr = enquo(truth),
+    data = .data
+  )
+  probs_sel <- tidyselect::eval_select(
+    expr = enquo(estimate),
+    data = .data
+  )
 
+  obs   <- names(obs_sel)
+  probs <- names(probs_sel)
+
+  rs_ch <- dplyr::group_vars(.data)
   rs_ch <- unname(rs_ch)
 
   obs_sym <- sym(obs)
@@ -135,7 +143,7 @@ threshold_perf.data.frame <- function(.data,
   }
 
   if (na_rm) {
-    .data <- na.omit(.data)
+    .data <- stats::na.omit(.data)
   }
 
   .data <- .data %>%
@@ -143,18 +151,29 @@ threshold_perf.data.frame <- function(.data,
       threshold = thresholds,
       inc = c("truth", "prob", rs_ch)
     ) %>%
-    mutate(
-      alt_pred = recode_data(truth, prob, .threshold)
+    dplyr::mutate(
+      alt_pred = recode_data(
+        obs = truth,
+        prob = prob,
+        threshold = .threshold,
+        event_level = event_level
+      )
     )
 
   if (!is.null(rs_id)) {
-    .data <- .data %>% group_by(!!!rs_id, .threshold)
+    .data <- .data %>% dplyr::group_by(!!!rs_id, .threshold)
   } else {
-    .data <- .data %>% group_by(.threshold)
+    .data <- .data %>% dplyr::group_by(.threshold)
   }
 
-  .data_metrics <- .data %>%
-    two_class(truth, estimate = alt_pred)
+  two_class <- yardstick::metric_set(sens, spec, j_index)
+
+  .data_metrics <- two_class(
+    .data,
+    truth = truth,
+    estimate = alt_pred,
+    event_level = event_level
+  )
 
   # Create the `distance` metric data frame
   # and add it on
@@ -175,18 +194,12 @@ threshold_perf.data.frame <- function(.data,
   .data_metrics
 }
 
-#' @importFrom yardstick sens spec j_index metric_set
-two_class <- function(...) {
-  mets <- metric_set(sens, spec, j_index)
-  mets(...)
-}
-
 expand_preds <- function(.data, threshold, inc = NULL) {
   threshold <- unique(threshold)
   nth <- length(threshold)
   n_data <- nrow(.data)
   if (!is.null(inc))
-    .data <- dplyr::select(.data, inc)
+    .data <- dplyr::select(.data, tidyselect::all_of(inc))
   .data <- .data[rep(1:nrow(.data), times = nth), ]
   .data$.threshold <- rep(threshold, each = n_data)
   .data

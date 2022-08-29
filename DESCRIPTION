@@ -1,30 +1,37 @@
 Package: probably
-Version: 0.0.6
 Title: Tools for Post-Processing Class Probability Estimates
-Description: Models can be improved by post-processing class probabilities, by: recalibration, conversion to hard probabilities, assessment of equivocal zones, and other activities. 'probably' contains tools for conducting these operations. 
+Version: 0.1.0
 Authors@R: c(
-    person("Max", "Kuhn", , "max@rstudio.com", c("aut")),
-    person("Davis", "Vaughan", , "davis@rstudio.com", c("aut", "cre")),
-    person("RStudio", role = "cph"))
+    person("Max", "Kuhn", , "max@rstudio.com", role = c("aut", "cre")),
+    person("Davis", "Vaughan", , "davis@rstudio.com", role = "aut"),
+    person("RStudio", role = c("cph", "fnd"))
+  )
+Description: Models can be improved by post-processing class
+    probabilities, by: recalibration, conversion to hard probabilities,
+    assessment of equivocal zones, and other activities. 'probably'
+    contains tools for conducting these operations.
+License: MIT + file LICENSE
 URL: https://github.com/tidymodels/probably/,
         https://probably.tidymodels.org
 BugReports: https://github.com/tidymodels/probably/issues
-License: GPL-2
+Depends: R (>= 3.4.0)
+Imports: dplyr (>= 1.0.9), generics (>= 0.1.3), magrittr (>= 2.0.3),
+        rlang (>= 1.0.4), tidyselect (>= 1.1.2), vctrs (>= 0.4.1),
+        yardstick (>= 1.0.0)
+Suggests: covr, ggplot2, knitr, modeldata, parsnip, rmarkdown, rsample,
+        testthat (>= 3.0.0)
+VignetteBuilder: knitr
+ByteCompile: true
+Config/Needs/website: tidyverse/tidytemplate
+Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
-ByteCompile: true
-RoxygenNote: 7.1.0
-Depends: R (>= 2.10)
-Imports: dplyr, generics, rlang (>= 0.4.0), tidyselect, vctrs (>=
-        0.3.0), yardstick
-Suggests: covr, ggplot2, knitr, modeldata, parsnip, rmarkdown, rsample,
-        testthat
-VignetteBuilder: knitr
+RoxygenNote: 7.2.1
 NeedsCompilation: no
-Packaged: 2020-06-05 13:32:49 UTC; davis
-Author: Max Kuhn [aut],
-  Davis Vaughan [aut, cre],
-  RStudio [cph]
-Maintainer: Davis Vaughan <davis@rstudio.com>
+Packaged: 2022-08-29 15:33:03 UTC; davis
+Author: Max Kuhn [aut, cre],
+  Davis Vaughan [aut],
+  RStudio [cph, fnd]
+Maintainer: Max Kuhn <max@rstudio.com>
 Repository: CRAN
-Date/Publication: 2020-06-05 14:00:02 UTC
+Date/Publication: 2022-08-29 16:10:02 UTC

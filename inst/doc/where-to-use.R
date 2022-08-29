@@ -1,5 +1,11 @@
 ## ----setup, include = FALSE---------------------------------------------------
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 6, fig.align = "center")
+knitr::opts_chunk$set(
+  collapse = TRUE, 
+  comment = "#>", 
+  fig.width = 7, 
+  fig.height = 6, 
+  fig.align = "center"
+)
 
 ## ---- message=FALSE, warning=FALSE--------------------------------------------
 library(parsnip)
@@ -61,7 +67,13 @@ lending_test_pred
 
 ## -----------------------------------------------------------------------------
 hard_pred_0.5 <- lending_test_pred %>%
-  mutate(.pred = make_two_class_pred(.pred_good, levels(Class), threshold = .5)) %>%
+  mutate(
+    .pred = make_two_class_pred(
+      estimate = .pred_good, 
+      levels = levels(Class), 
+      threshold = .5
+    )
+  ) %>%
   select(Class, contains(".pred"))
 
 hard_pred_0.5 %>% 
@@ -69,7 +81,13 @@ hard_pred_0.5 %>%
 
 ## -----------------------------------------------------------------------------
 hard_pred_0.75 <- lending_test_pred %>%
-  mutate(.pred = make_two_class_pred(.pred_good, levels(Class), threshold = .75)) %>%
+  mutate(
+    .pred = make_two_class_pred(
+      estimate = .pred_good, 
+      levels = levels(Class), 
+      threshold = .75
+    )
+  ) %>%
   select(Class, contains(".pred"))
 
 hard_pred_0.75 %>% 
@@ -80,11 +98,6 @@ correct_bad <- nrow(filter(hard_pred_0.75, Class == "bad", .pred == "bad"))
 
 ## -----------------------------------------------------------------------------
 library(yardstick)
-
-# Currently yardstick can't deal with the class_pred objects that come from
-# probably, but it will be able to soon!
-hard_pred_0.5 <- mutate(hard_pred_0.5, .pred = as.factor(.pred))
-hard_pred_0.75 <- mutate(hard_pred_0.75, .pred = as.factor(.pred))
 
 sens(hard_pred_0.5, Class, .pred)
 spec(hard_pred_0.5, Class, .pred)

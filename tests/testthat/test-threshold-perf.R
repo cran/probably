@@ -1,12 +1,3 @@
-library(testthat)
-library(probably)
-library(dplyr)
-library(yardstick)
-
-context("creating threshold statistics")
-
-# ----------------------------------------------------------------
-
 sim_n <- 120
 
 set.seed(1094)
@@ -26,14 +17,14 @@ ex_data_miss$outcome[c(49, 85, 57, 110)] <- NA
 
 thr <- c(0, .5, .78, 1)
 
-mets <- metric_set(sens, spec, j_index)
-
 get_res <- function(prob, obs, cut) {
-  cls <- probably:::recode_data(obs, prob, cut)
+  cls <- recode_data(obs, prob, cut, event_level = "first")
   dat <- data.frame(
     obs = obs,
     cls = cls
   )
+
+  mets <- yardstick::metric_set(sens, spec, j_index)
 
   .data_metrics <- dat %>%
     mets(obs, estimate = cls)
@@ -51,61 +42,59 @@ get_res <- function(prob, obs, cut) {
       .estimate = (1 - sens_vec) ^ 2 + (1 - .estimate) ^ 2
     )
 
-  bind_rows(.data_metrics, dist)
+  dplyr::bind_rows(.data_metrics, dist)
 }
 
 # ----------------------------------------------------------------
 
 test_that('factor from numeric', {
   new_fac_1 <-
-    probably:::recode_data(
+    recode_data(
       obs = ex_data$outcome,
       prob = ex_data$prob_est,
-      threshold = ex_data$prob_est[1]
+      threshold = ex_data$prob_est[1],
+      event_level = "first"
     )
   tab_1 <- table(new_fac_1)
   expect_s3_class(new_fac_1, "factor")
   expect_true(isTRUE(all.equal(levels(new_fac_1), levels(ex_data$outcome))))
-  expect_equivalent(tab_1["Cl1"], sum(ex_data$prob_est >= ex_data$prob_est[1]))
-  expect_equivalent(tab_1["Cl2"], sum(ex_data$prob_est <  ex_data$prob_est[1]))
+  expect_equal(unname(tab_1["Cl1"]), sum(ex_data$prob_est >= ex_data$prob_est[1]))
+  expect_equal(unname(tab_1["Cl2"]), sum(ex_data$prob_est <  ex_data$prob_est[1]))
 
   # missing data
   new_fac_2 <-
-    probably:::recode_data(
+    recode_data(
       obs = ex_data_miss$outcome,
       prob = ex_data_miss$prob_est,
-      threshold = ex_data_miss$prob_est[1]
+      threshold = ex_data_miss$prob_est[1],
+      event_level = "first"
     )
   tab_2 <- table(new_fac_2)
   expect_s3_class(new_fac_2, "factor")
   cmpl_probs <- ex_data_miss$prob_est[!is.na(ex_data_miss$prob_est)]
   expect_true(isTRUE(all.equal(is.na(new_fac_2), is.na(ex_data_miss$prob_est))))
   expect_true(isTRUE(all.equal(levels(new_fac_2), levels(ex_data_miss$outcome))))
-  expect_equivalent(tab_2["Cl1"], sum(cmpl_probs >= ex_data_miss$prob_est[1]))
-  expect_equivalent(tab_2["Cl2"], sum(cmpl_probs <  ex_data_miss$prob_est[1]))
-
-  # reverse factor levels
-  options(yardstick.event_first = FALSE)
+  expect_equal(unname(tab_2["Cl1"]), sum(cmpl_probs >= ex_data_miss$prob_est[1]))
+  expect_equal(unname(tab_2["Cl2"]), sum(cmpl_probs <  ex_data_miss$prob_est[1]))
 
   new_fac_3 <-
-    probably:::recode_data(
+    recode_data(
       obs = ex_data$outcome,
       prob = ex_data$prob_est,
-      threshold = ex_data$prob_est[1]
+      threshold = ex_data$prob_est[1],
+      event_level = "second"
     )
   tab_3 <- table(new_fac_3)
   expect_s3_class(new_fac_3, "factor")
   expect_true(isTRUE(all.equal(levels(new_fac_3), levels(ex_data$outcome))))
-  expect_equivalent(tab_3["Cl1"], sum(ex_data$prob_est <  ex_data$prob_est[1]))
-  expect_equivalent(tab_3["Cl2"], sum(ex_data$prob_est >= ex_data$prob_est[1]))
-
-  options(yardstick.event_first = TRUE)
+  expect_equal(unname(tab_3["Cl1"]), sum(ex_data$prob_est <  ex_data$prob_est[1]))
+  expect_equal(unname(tab_3["Cl2"]), sum(ex_data$prob_est >= ex_data$prob_est[1]))
 })
 
 test_that('single group', {
   one_group_data <-
     ex_data %>%
-    group_by(group_2) %>%
+    dplyr::group_by(group_2) %>%
     threshold_perf(
       outcome,
       prob_est,
@@ -128,3 +117,4 @@ test_that('single group', {
     expect_equal(one_group_data_obs, one_group_data_exp)
   }
 })
+

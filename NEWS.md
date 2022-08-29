@@ -1,3 +1,21 @@
+# probably 0.1.0
+
+* Max Kuhn is now the maintainer (#49).
+
+* Re-licensed package from GPL-2 to MIT. All copyright holders are RStudio
+  employees and give consent.
+
+* Fixed a bug with how `make_class_pred()` and `make_two_class_pred()` validate
+  the `levels` argument (#42).
+
+* `threshold_perf()` now has an explicit `event_level` argument rather than
+  respecting the now deprecated `yardstick.event_first` global option (#45).
+
+* Bumped the minimum required R version to >=3.4.0 to align with the rest of the
+  tidyverse.
+  
+* Updated to testthat 3e (#44).
+
 # probably 0.0.6
 
 * `class_pred` objects are now comparable and will be ordered by their levels.

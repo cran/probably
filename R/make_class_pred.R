@@ -68,7 +68,6 @@
 #'     )
 #'   )
 #'
-#' @importFrom tidyselect vars_select
 #' @export
 make_class_pred <- function(...,
                             levels,
@@ -99,7 +98,7 @@ make_class_pred <- function(...,
   }
 
   # Levels check (length and type)
-  if (length(levels) != length(probs) && is.character(levels)) {
+  if (length(levels) != length(probs) || !is.character(levels)) {
     stop (
       "`levels` must be a character vector with the ",
       "same length as the number of vectors passed to `...`.",
@@ -142,7 +141,7 @@ make_two_class_pred <- function(estimate,
                                 ordered = FALSE,
                                 buffer = NULL) {
 
-  if (length(levels) != 2 && is.character(levels))
+  if (length(levels) != 2 || !is.character(levels))
     stop ("`levels` must be a character vector of length 2.", call. = FALSE)
 
   if (!is.numeric(estimate))
@@ -246,7 +245,12 @@ append_class_pred <- function(.data,
     stop("`name` must be a single character value.", call. = FALSE)
   }
 
-  prob_names <- tidyselect::vars_select(names(.data), !!!quos(...))
+  sel <- tidyselect::eval_select(
+    expr = expr(c(...)),
+    data = .data
+  )
+
+  prob_names <- names(sel)
 
   if (length(prob_names) < 2) {
     stop ("`...` should select at least 2 columns.", call. = FALSE)

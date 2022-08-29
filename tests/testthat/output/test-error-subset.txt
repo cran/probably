@@ -1,5 +1,0 @@
-> manual_creation_eq[1:6]
-Error: Can't subset elements that don't exist.
-x Location 6 doesn't exist.
-i There are only 5 elements.
-

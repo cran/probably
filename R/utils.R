@@ -1,10 +1,8 @@
-#' @import rlang
-#' @importFrom utils globalVariables
 
 # is there a forcats for this?
-recode_data <- function(obs, prob, threshold) {
+recode_data <- function(obs, prob, threshold, event_level) {
   lvl <- levels(obs)
-  if (getOption("yardstick.event_first", default = TRUE)) {
+  if (identical(event_level, "first")) {
     pred <- ifelse(prob >= threshold, lvl[1], lvl[2])
   } else {
     pred <- ifelse(prob >= threshold, lvl[2], lvl[1])
@@ -35,10 +33,14 @@ is_ordered <- function(x) {
   UseMethod("is_ordered")
 }
 
+# Must export internal methods for testing
+#' @export
 is_ordered.class_pred <- function(x) {
   is_ordered_class_pred(x)
 }
 
+# Must export internal methods for testing
+#' @export
 is_ordered.default <- function(x) {
   is.ordered(x)
 }
