@@ -1,3 +1,27 @@
+# probably 1.0.0
+
+* Copyright holder changed to Posit Software PBC.
+
+* A set of calibration tools were added: 
+
+  * The need for calibration can be visualized using the collection of `cal_plot_*()` functions.
+  * Calibration methods can be estimated with a family of `cal_estimate_*()` functions.
+  * To validate the calibrations using resampling, see the `cal_validate_*()` functions.
+  * `cal_apply()` can take a calibration model and apply it to a set of existing predictions.
+  
+* Possible calibration tools:  
+
+  * Binary classification methods: logistic regression, isotonic regression, and Beta calibration.
+  * Multiclass classification: multinomial, isotonic regression, and Beta calibration
+  * Regression: linear regression, isotonic regression
+
+* Based on the initial PR (#37) by Antonio R. Vargas, `threshold_perf()` now accepts a custom metric set (#25)
+
+* Two functions were added to compute prediction intervals for regression models via conformal inference: 
+
+  * `int_conformal_infer()`
+  * `int_conformal_infer_cv()`
+
 # probably 0.1.0
 
 * Max Kuhn is now the maintainer (#49).

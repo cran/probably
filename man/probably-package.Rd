@@ -6,7 +6,7 @@
 \alias{probably-package}
 \title{probably: Tools for Post-Processing Class Probability Estimates}
 \description{
-Models can be improved by post-processing class probabilities, by: recalibration, conversion to hard probabilities, assessment of equivocal zones, and other activities. 'probably' contains tools for conducting these operations.
+Models can be improved by post-processing class probabilities, by: recalibration, conversion to hard probabilities, assessment of equivocal zones, and other activities. 'probably' contains tools for conducting these operations as well as calibration tools and conformal inference techniques for regression models.
 }
 \seealso{
 Useful links:
@@ -18,16 +18,17 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Max Kuhn \email{max@rstudio.com}
+\strong{Maintainer}: Max Kuhn \email{max@posit.co}
 
 Authors:
 \itemize{
-  \item Davis Vaughan \email{davis@rstudio.com}
+  \item Davis Vaughan \email{davis@posit.co}
+  \item Edgar Ruiz \email{edgar@posit.co}
 }
 
 Other contributors:
 \itemize{
-  \item RStudio [copyright holder, funder]
+  \item Posit Software, PBC [copyright holder, funder]
 }
 
 }
