@@ -1,6 +1,6 @@
 Package: probably
 Title: Tools for Post-Processing Class Probability Estimates
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Max", "Kuhn", , "max@posit.co", role = c("aut", "cre")),
     person("Davis", "Vaughan", , "davis@posit.co", role = "aut"),
@@ -22,8 +22,8 @@ Imports: butcher, cli, dplyr (>= 1.1.0), furrr, generics (>= 0.1.3),
         1.3.0), tidyselect (>= 1.1.2), tune (>= 1.1.0), vctrs (>=
         0.4.1), withr, workflows, yardstick (> 1.0.0)
 Suggests: betacal, covr, knitr, MASS, mgcv, modeldata (>= 1.1.0), nnet,
-        parsnip, randomForest, recipes, rmarkdown, rsample, testthat
-        (>= 3.0.0)
+        parsnip, quantregForest, randomForest, recipes, rmarkdown,
+        rsample, testthat (>= 3.0.0)
 VignetteBuilder: knitr
 ByteCompile: true
 Config/Needs/website: tidyverse/tidytemplate
@@ -32,11 +32,11 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2023-06-01 20:37:00 UTC; max
+Packaged: 2023-06-22 19:33:39 UTC; max
 Author: Max Kuhn [aut, cre],
   Davis Vaughan [aut],
   Edgar Ruiz [aut],
   Posit Software, PBC [cph, fnd]
 Maintainer: Max Kuhn <max@posit.co>
 Repository: CRAN
-Date/Publication: 2023-06-01 22:50:02 UTC
+Date/Publication: 2023-06-22 19:50:02 UTC
