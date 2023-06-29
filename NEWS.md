@@ -1,3 +1,7 @@
+# probably 1.0.2
+
+* Removed use of base R pipe so that the package can be used with older R versions.
+
 # probably 1.0.1
 
 * The conformal functions `int_conformal_infer_*()` were renamed to `int_conformal_*()`.
