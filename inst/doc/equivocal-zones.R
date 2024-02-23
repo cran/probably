@@ -4,7 +4,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-## ---- message=FALSE, warning=FALSE--------------------------------------------
+## ----message=FALSE, warning=FALSE---------------------------------------------
 library(probably)
 
 ## -----------------------------------------------------------------------------
@@ -13,11 +13,11 @@ x <- factor(c("Yes", "No", "Yes", "Yes"))
 # Create a class_pred object from a factor
 class_pred(x)
 
-# Say you aren't sure about that 2nd "Yes" value. 
+# Say you aren't sure about that 2nd "Yes" value.
 # You could mark it as equivocal.
 class_pred(x, which = 3)
 
-## ---- message=FALSE, warning=FALSE--------------------------------------------
+## ----message=FALSE, warning=FALSE---------------------------------------------
 library(dplyr)
 data("segment_logistic")
 segment_logistic
@@ -28,8 +28,8 @@ segment_logistic
 segment_logistic_thresh <- segment_logistic %>%
   mutate(
     .pred = make_two_class_pred(
-      estimate = .pred_good, 
-      levels = levels(Class), 
+      estimate = .pred_good,
+      levels = levels(Class),
       threshold = 0.5
     )
   )
@@ -44,12 +44,12 @@ segment_logistic_thresh
 segment_pred <- segment_logistic %>%
   mutate(
     .pred = make_two_class_pred(
-      estimate = .pred_good, 
-      levels = levels(Class), 
+      estimate = .pred_good,
+      levels = levels(Class),
       threshold = 0.5,
       buffer = 0.05
     )
-  ) 
+  )
 
 segment_pred %>%
   count(.pred)

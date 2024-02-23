@@ -37,7 +37,6 @@ test_that("Logistic estimates work - data.frame", {
     bin_with_configs() %>%
     cal_estimate_logistic(truth = Class, smooth = FALSE)
   expect_true(are_groups_configs(lgst_configs))
-
 })
 
 test_that("Logistic estimates work - tune_results", {
@@ -113,6 +112,7 @@ test_that("Isotonic estimates work - data.frame", {
   expect_cal_rows(sl_isotonic)
   expect_snapshot(print(sl_isotonic))
 
+  set.seed(100)
   sl_isotonic_group <- segment_logistic %>%
     dplyr::mutate(group = .pred_poor > 0.5) %>%
     cal_estimate_isotonic(Class, .by = group)
@@ -122,17 +122,20 @@ test_that("Isotonic estimates work - data.frame", {
   expect_cal_rows(sl_isotonic_group)
   expect_snapshot(print(sl_isotonic_group))
 
+  set.seed(100)
   expect_snapshot_error(
     segment_logistic %>%
       dplyr::mutate(group1 = 1, group2 = 2) %>%
       cal_estimate_isotonic(Class, .by = c(group1, group2))
   )
 
+  set.seed(100)
   iso_configs <-
     bin_with_configs() %>%
     cal_estimate_isotonic(truth = Class)
   expect_true(are_groups_configs(iso_configs))
 
+  set.seed(100)
   mltm_configs <-
     mnl_with_configs() %>%
     cal_estimate_isotonic(truth = obs, estimate = c(VF:L))
@@ -233,7 +236,6 @@ test_that("Isotonic Bootstrapped estimates work - data.frame", {
     mnl_with_configs() %>%
     cal_estimate_isotonic_boot(truth = obs, estimate = c(VF:L))
   expect_true(are_groups_configs(mltm_configs))
-
 })
 
 test_that("Isotonic Bootstrapped estimates work - tune_results", {

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Davis Vaughan" />
 
-<meta name="date" content="2023-06-29" />
+<meta name="date" content="2024-02-22" />
 
 <title>Equivocal zones</title>
 
@@ -51,7 +51,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -340,7 +340,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Equivocal zones</h1>
 <h4 class="author">Davis Vaughan</h4>
-<h4 class="date">2023-06-29</h4>
+<h4 class="date">2024-02-22</h4>
 
 
 
@@ -375,7 +375,7 @@ to mark certain values as equivocal.</p>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; Levels: No Yes</span></span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; Reportable: 100%</span></span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># Say you aren&#39;t sure about that 2nd &quot;Yes&quot; value. </span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># Say you aren&#39;t sure about that 2nd &quot;Yes&quot; value.</span></span>
 <span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># You could mark it as equivocal.</span></span>
 <span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">class_pred</span>(x, <span class="at">which =</span> <span class="dv">3</span>)</span>
 <span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; [1] Yes  No   [EQ] Yes </span></span>
@@ -416,8 +416,8 @@ class probabilities into class predictions with
 <span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>segment_logistic_thresh <span class="ot">&lt;-</span> segment_logistic <span class="sc">%&gt;%</span></span>
 <span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>    <span class="at">.pred =</span> <span class="fu">make_two_class_pred</span>(</span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>      <span class="at">estimate =</span> .pred_good, </span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">levels</span>(Class), </span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>      <span class="at">estimate =</span> .pred_good,</span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">levels</span>(Class),</span>
 <span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>      <span class="at">threshold =</span> <span class="fl">0.5</span></span>
 <span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>    )</span>
 <span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  )</span>
@@ -447,12 +447,12 @@ the zone are automatically marked as equivocal.</p>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>segment_pred <span class="ot">&lt;-</span> segment_logistic <span class="sc">%&gt;%</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    <span class="at">.pred =</span> <span class="fu">make_two_class_pred</span>(</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>      <span class="at">estimate =</span> .pred_good, </span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">levels</span>(Class), </span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>      <span class="at">estimate =</span> .pred_good,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>      <span class="at">levels =</span> <span class="fu">levels</span>(Class),</span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>      <span class="at">threshold =</span> <span class="fl">0.5</span>,</span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>      <span class="at">buffer =</span> <span class="fl">0.05</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>    )</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  ) </span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  )</span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a></span>
 <span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>segment_pred <span class="sc">%&gt;%</span></span>
 <span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>  <span class="fu">count</span>(.pred)</span>

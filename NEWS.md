@@ -1,7 +1,10 @@
+# probably 1.0.3
+
+* Fixed a bug where the grouping for calibration methods was sensitive to the type of the grouping variables (#127).
+
 # probably 1.0.2
 
-* Removed use of base R pipe so that the package can be used with older R versions.
-
+* Quick release to remove the base R pipe (to maintain backwards compatibility). 
 # probably 1.0.1
 
 * The conformal functions `int_conformal_infer_*()` were renamed to `int_conformal_*()`.

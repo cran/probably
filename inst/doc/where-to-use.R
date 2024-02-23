@@ -1,13 +1,13 @@
 ## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
-  collapse = TRUE, 
-  comment = "#>", 
-  fig.width = 7, 
-  fig.height = 6, 
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 6,
   fig.align = "center"
 )
 
-## ---- message=FALSE, warning=FALSE--------------------------------------------
+## ----message=FALSE, warning=FALSE---------------------------------------------
 library(parsnip)
 library(probably)
 library(dplyr)
@@ -33,7 +33,7 @@ set.seed(123)
 split <- initial_split(lending_club, prop = 0.75)
 
 lending_train <- training(split)
-lending_test  <- testing(split)
+lending_test <- testing(split)
 
 ## -----------------------------------------------------------------------------
 count(lending_train, Class)
@@ -42,14 +42,14 @@ count(lending_train, Class)
 logi_reg <- logistic_reg()
 logi_reg_glm <- logi_reg %>% set_engine("glm")
 
-# A small model specification that defines the type of model you are 
+# A small model specification that defines the type of model you are
 # using and the engine
 logi_reg_glm
 
 # Fit the model
 logi_reg_fit <- fit(
-  logi_reg_glm, 
-  formula = Class ~ annual_inc + verification_status + sub_grade, 
+  logi_reg_glm,
+  formula = Class ~ annual_inc + verification_status + sub_grade,
   data = lending_train
 )
 
@@ -69,31 +69,31 @@ lending_test_pred
 hard_pred_0.5 <- lending_test_pred %>%
   mutate(
     .pred = make_two_class_pred(
-      estimate = .pred_good, 
-      levels = levels(Class), 
+      estimate = .pred_good,
+      levels = levels(Class),
       threshold = .5
     )
   ) %>%
   select(Class, contains(".pred"))
 
-hard_pred_0.5 %>% 
+hard_pred_0.5 %>%
   count(.truth = Class, .pred)
 
 ## -----------------------------------------------------------------------------
 hard_pred_0.75 <- lending_test_pred %>%
   mutate(
     .pred = make_two_class_pred(
-      estimate = .pred_good, 
-      levels = levels(Class), 
+      estimate = .pred_good,
+      levels = levels(Class),
       threshold = .75
     )
   ) %>%
   select(Class, contains(".pred"))
 
-hard_pred_0.75 %>% 
+hard_pred_0.75 %>%
   count(.truth = Class, .pred)
 
-## ---- echo=FALSE--------------------------------------------------------------
+## ----echo=FALSE---------------------------------------------------------------
 correct_bad <- nrow(filter(hard_pred_0.75, Class == "bad", .pred == "bad"))
 
 ## -----------------------------------------------------------------------------
