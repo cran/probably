@@ -1,7 +1,7 @@
 #--------------------------------- Table ---------------------------------------
 
 # This function iterates through each of the class levels. For binary it selects
-# the appropiate one based on the `event_level` selected
+# the appropriate one based on the `event_level` selected
 .cal_class_grps <- function(.data, truth, cuts, levels, event_level, conf_level,
                             method = "breaks", smooth = NULL) {
   truth <- enquo(truth)
@@ -18,8 +18,7 @@
   }
 
   if (length_levels > 2 & lev == 2) {
-    msg <- "Only 'event_level' of 'auto' is valid for multi-class models"
-    rlang::abort(msg)
+    cli::cli_abort("Only {.val auto} {.arg event_level} is valid for multi-class models.")
   }
 
   no_levels <- levels
@@ -29,49 +28,45 @@
   if (method == "breaks") {
     res <- purrr::imap(
       no_levels,
-      ~ {
-        .cal_cut_grps(
-          .data = .data,
-          truth = !!truth,
-          estimate = !!.x,
-          cuts = cuts,
-          level = as.integer(.y),
-          lev = lev,
-          conf_level = conf_level
-        )
-      }
+      ~ .cal_cut_grps(
+        .data = .data,
+        truth = !!truth,
+        estimate = !!.x,
+        cuts = cuts,
+        level = as.integer(.y),
+        lev = lev,
+        conf_level = conf_level
+      )
     )
   }
 
   if (method == "model") {
     res <- purrr::imap(
       no_levels,
-      ~ {
-        .cal_model_grps(
-          .data = .data,
-          truth = !!truth,
-          estimate = !!.x,
-          smooth = smooth,
-          level = as.integer(.y),
-          lev = lev,
-          conf_level = conf_level
-        )
-      }
+      ~ .cal_model_grps(
+        .data = .data,
+        truth = !!truth,
+        estimate = !!.x,
+        smooth = smooth,
+        level = as.integer(.y),
+        lev = lev,
+        conf_level = conf_level
+      )
     )
   }
 
   if (length(res) > 1) {
-    res <- res %>%
-      purrr::set_names(names(levels)) %>%
-      purrr::imap(~ dplyr::mutate(.x, !!truth := .y)) %>%
-      purrr::reduce(dplyr::bind_rows) %>%
+    res <- res |>
+      purrr::set_names(names(levels)) |>
+      purrr::imap(~ dplyr::mutate(.x, !!truth := .y)) |>
+      purrr::reduce(dplyr::bind_rows) |>
       dplyr::select(!!truth, dplyr::everything())
   } else {
     res <- res[[1]]
   }
 
   if (method == "breaks") {
-    res <- res %>%
+    res <- res |>
       dplyr::select(predicted_midpoint, dplyr::everything())
   }
 
@@ -97,8 +92,8 @@
     lev_no <- 0
   }
 
-  prep_data <- .data %>%
-    dplyr::select(truth = !!truth, estimate = !!estimate) %>%
+  prep_data <- .data |>
+    dplyr::select(truth = !!truth, estimate = !!estimate) |>
     dplyr::mutate(
       truth = ifelse(as.integer(truth) == level, lev_yes, lev_no)
     )
@@ -146,26 +141,27 @@
     lev_no <- 0
   }
 
-  .data <- .data %>%
+  .data <- .data |>
     dplyr::mutate(
       .is_val = ifelse(as.integer(!!truth) == level, lev_yes, lev_no),
       .estimate = !!estimate
     )
 
-  cuts %>%
-    purrr::transpose() %>%
-    purrr::map_df(
-      ~ {
-        rf <- .data$.estimate >= .x$lower_cut & .data$.estimate <= .x$upper_cut
-        ret <- .data[rf, ]
-        ret <- process_midpoint(ret, conf_level = conf_level)
-        if (!is.null(ret)) {
-          pm <- .x$lower_cut + ((.x$upper_cut - .x$lower_cut) / 2)
-          ret$predicted_midpoint <- pm
-        }
-        ret
-      }
-    )
+  cuts |>
+    purrr::list_transpose(simplify = FALSE) |>
+    purrr::map_df(mid_point, pred_data = .data, conf_level = conf_level)
+}
+
+
+mid_point <- function(x, pred_data, conf_level) {
+  rf <- pred_data$.estimate >= x$lower_cut & pred_data$.estimate <= x$upper_cut
+  ret <- pred_data[rf, ]
+  ret <- process_midpoint(ret, conf_level = conf_level)
+  if (!is.null(ret)) {
+    pm <- x$lower_cut + ((x$upper_cut - x$lower_cut) / 2)
+    ret$predicted_midpoint <- pm
+  }
+  ret
 }
 
 process_midpoint <- function(.data, conf_level = 0.95) {
@@ -206,11 +202,8 @@ process_level <- function(x) {
     ret <- 2
   }
   if (is.null(ret)) {
-    msg <- paste0(
-      "Invalid event_level entry: ", x,
-      ". Valid entries are 'first', 'second', or 'auto'"
-    )
-    rlang::abort(msg)
+    cli::cli_abort("Invalid {.arg event_level} entry: {x}. Valid entries are
+                   {.val first}, {.val second}, or {.val auto}.", call = NULL)
   }
   ret
 }
@@ -284,7 +277,7 @@ cal_plot_impl <- function(tbl, x, y,
 
   if (length(gp_vars)) {
     if (length(gp_vars) > 1) {
-      rlang::abort("Plot does not support more than one grouping variable")
+      cli::cli_abort("Plot does not support more than one grouping variable.")
     }
     has_groups <- TRUE
     dplyr_group <- parse_expr(gp_vars)
@@ -324,7 +317,7 @@ cal_plot_impl <- function(tbl, x, y,
     level1 <- levels[[1]]
 
     if (length(levels) > 1 & !is_tune_results) {
-      rlang::warn(paste0("Multiple class columns identified. Using: `", level1, "`"))
+      cli::cli_warn("Multiple class columns identified. Using: {.code {level1}}")
     }
 
     truth_values <- 1:2

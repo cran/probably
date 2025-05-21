@@ -27,7 +27,11 @@
 
 # Event level handling works
 
-    Invalid event_level entry: invalid. Valid entries are 'first', 'second', or 'auto'
+    i In argument: `res = map(...)`.
+    Caused by error in `map()`:
+    i In index: 1.
+    Caused by error:
+    ! Invalid `event_level` entry: invalid. Valid entries are "first", "second", or "auto".
 
 # regression plot function errors - grouped_df
 

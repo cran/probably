@@ -11,8 +11,10 @@ truth_estimate_map <- function(.data, truth, estimate, validate = FALSE) {
     truth_str <- names(truth_str)
   }
 
-  estimate_str <- .data %>%
-    tidyselect_cols({{ estimate }}) %>%
+  # Get the name(s) of the column(s) that have the predicted values. For binary
+  # data, this is a single column name.
+  estimate_str <- .data |>
+    tidyselect_cols({{ estimate }}) |>
     names()
 
   if (length(estimate_str) == 0) {
@@ -21,6 +23,8 @@ truth_estimate_map <- function(.data, truth, estimate, validate = FALSE) {
 
   truth_levels <- levels(.data[[truth_str]])
 
+  # `est_map` maps the levels of the outcome to the corresponding column(s) in
+  # the data
   if (length(truth_levels) > 0) {
     if (all(substr(estimate_str, 1, 6) == ".pred_")) {
       est_map <- purrr::map(
@@ -33,10 +37,11 @@ truth_estimate_map <- function(.data, truth, estimate, validate = FALSE) {
         }
       )
     } else {
-      est_map <- purrr::map(
-        seq_along(truth_levels),
-        ~ sym(estimate_str[[.x]])
-      )
+      if (length(estimate_str) == 1) {
+        est_map <- list(sym(estimate_str), NULL)
+      } else {
+        est_map <- purrr::map(seq_along(truth_levels), ~ sym(estimate_str[[.x]]))
+      }
     }
     if (validate) {
       check_level_consistency(truth_levels, est_map)
@@ -50,21 +55,25 @@ truth_estimate_map <- function(.data, truth, estimate, validate = FALSE) {
   purrr::discard(res, is.null)
 }
 
-
 check_level_consistency <- function(lvls, mapping) {
   null_map <- purrr::map_lgl(mapping, is_null)
   if (any(null_map) | length(lvls) != length(mapping)) {
     missings <- lvls[null_map]
     missings <- paste0(missings, collapse = ", ")
     cols <- mapping[!null_map]
-    cols < purrr::map_chr(cols, as.character)
+    cols <- purrr::map_chr(cols, as.character)
     cols <- paste0(cols, collapse = ", ")
-    msg <- paste0(
-      "We can't connect the specified prediction columns to some factor levels (",
-      missings, "). The selected columns were ", cols, ". Are there more ",
-      "columns to add in the function call?"
+    cli::cli_abort(
+      c(
+        "We can't connect the specified prediction columns to {.val {missings}}.",
+        "i" = "The selected columns were {.val {cols}}.",
+        "i" = "Are there more columns to add in the function call?"
+      )
     )
-    rlang::abort(msg)
   }
   invisible(NULL)
+}
+
+nm_levels <- function(x) {
+  purrr::map_chr(x, rlang::as_name)
 }

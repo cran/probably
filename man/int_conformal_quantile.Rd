@@ -46,7 +46,7 @@ Note that the because of the method used to construct the interval, it is
 possible that the prediction intervals will not include the predicted value.
 }
 \examples{
-\dontshow{if (!probably:::is_cran_check()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (!probably:::is_cran_check() & rlang::is_installed(c("modeldata", "parsnip", "quantregForest"))) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 library(workflows)
 library(dplyr)
 library(parsnip)
@@ -57,16 +57,16 @@ library(modeldata)
 set.seed(2)
 sim_train <- sim_regression(500)
 sim_cal <- sim_regression(200)
-sim_new <- sim_regression(5) \%>\% select(-outcome)
+sim_new <- sim_regression(5) |> select(-outcome)
 
 # We'll use a neural network model
 mlp_spec <-
-  mlp(hidden_units = 5, penalty = 0.01) \%>\%
+  mlp(hidden_units = 5, penalty = 0.01) |>
   set_mode("regression")
 
 mlp_wflow <-
-  workflow() \%>\%
-  add_model(mlp_spec) \%>\%
+  workflow() |>
+  add_model(mlp_spec) |>
   add_formula(outcome ~ .)
 
 mlp_fit <- fit(mlp_wflow, data = sim_train)

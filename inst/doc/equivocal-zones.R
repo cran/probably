@@ -25,7 +25,7 @@ segment_logistic
 # Convert probabilities into predictions
 # > 0.5 = good
 # < 0.5 = poor
-segment_logistic_thresh <- segment_logistic %>%
+segment_logistic_thresh <- segment_logistic |>
   mutate(
     .pred = make_two_class_pred(
       estimate = .pred_good,
@@ -41,7 +41,7 @@ segment_logistic_thresh
 #        x > 0.55 = good
 #        x < 0.45 = poor
 # 0.45 < x < 0.55 = equivocal
-segment_pred <- segment_logistic %>%
+segment_pred <- segment_logistic |>
   mutate(
     .pred = make_two_class_pred(
       estimate = .pred_good,
@@ -51,15 +51,15 @@ segment_pred <- segment_logistic %>%
     )
   )
 
-segment_pred %>%
+segment_pred |>
   count(.pred)
 
-segment_pred %>%
+segment_pred |>
   summarise(reportable = reportable_rate(.pred))
 
 ## -----------------------------------------------------------------------------
-segment_pred %>%
-  mutate(.pred_fct = as.factor(.pred)) %>%
+segment_pred |>
+  mutate(.pred_fct = as.factor(.pred)) |>
   count(.pred, .pred_fct)
 
 levels(segment_pred$.pred)
@@ -68,12 +68,12 @@ levels(segment_pred$.pred)
 library(yardstick)
 
 # No equivocal zone
-segment_logistic_thresh %>%
-  mutate(.pred_fct = as.factor(.pred)) %>%
+segment_logistic_thresh |>
+  mutate(.pred_fct = as.factor(.pred)) |>
   precision(Class, .pred_fct)
 
 # Equivocal zone
-segment_pred %>%
-  mutate(.pred_fct = as.factor(.pred)) %>%
+segment_pred |>
+  mutate(.pred_fct = as.factor(.pred)) |>
   precision(Class, .pred_fct)
 

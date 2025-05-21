@@ -68,10 +68,11 @@ cal_apply.tune_results <- function(.data,
   cal_pkg_check(required_pkgs(object))
 
   if (!(".predictions" %in% colnames(.data))) {
-    rlang::abort(
-      paste0(
-        "The `tune_results` object does not contain columns with predictions",
-        " Refit with the control argument `save_pred = TRUE` to save these columns."
+    cli::cli_abort(
+      c(
+        "The {.arg .data} object does not contain columns with predictions.",
+        "i" = "Refit with the control argument {.code save_pred = TRUE} to save
+           these columns."
       )
     )
   }
@@ -104,11 +105,13 @@ cal_apply.cal_object <- function(.data,
                                  parameters = NULL,
                                  ...) {
   if ("data.frame" %in% class(object)) {
-    rlang::abort(paste0(
-      "`cal_apply()` expects the data as the first argument,",
-      " and the object as the second argument. Please reverse",
-      " the order of the arguments and try again."
-    ))
+    cli::cli_abort(
+      c(
+        "{.fn cal_apply} expects the data as the first argument, and the object
+         as the second argument.",
+        "i" = "Please reverse the order of the arguments and try again."
+      )
+    )
   }
 }
 
@@ -118,6 +121,7 @@ cal_adjust <- function(object, .data, pred_class) {
   UseMethod("cal_adjust")
 }
 
+#' @export
 cal_adjust.cal_estimate_isotonic <- function(object, .data, pred_class) {
   apply_interval_impl(
     object = object,
@@ -126,6 +130,7 @@ cal_adjust.cal_estimate_isotonic <- function(object, .data, pred_class) {
   )
 }
 
+#' @export
 cal_adjust.cal_estimate_isotonic_boot <- function(object, .data, pred_class) {
   apply_interval_impl(
     object = object,
@@ -134,6 +139,7 @@ cal_adjust.cal_estimate_isotonic_boot <- function(object, .data, pred_class) {
   )
 }
 
+#' @export
 cal_adjust.cal_estimate_beta <- function(object,
                                          .data,
                                          pred_class = NULL,
@@ -144,6 +150,7 @@ cal_adjust.cal_estimate_beta <- function(object,
   )
 }
 
+#' @export
 cal_adjust.cal_multi <- function(object, .data, pred_class) {
   cal_apply_multi(
     object = object,
@@ -152,6 +159,7 @@ cal_adjust.cal_multi <- function(object, .data, pred_class) {
   )
 }
 
+#' @export
 cal_adjust.cal_binary <- function(object, .data, pred_class) {
   cal_apply_binary(
     object = object,
@@ -160,12 +168,18 @@ cal_adjust.cal_binary <- function(object, .data, pred_class) {
   )
 }
 
+#' @export
 cal_adjust.cal_regression <- function(object, .data, pred_class) {
   cal_apply_regression(
     object = object,
     .data = .data,
     pred_class = NULL
   )
+}
+
+#' @export
+cal_adjust.cal_estimate_none <- function(object, .data, pred_class) {
+  .data
 }
 
 cal_adjust_update <- function(.data,
@@ -178,7 +192,6 @@ cal_adjust_update <- function(.data,
   } else {
     pred_class <- quo(NULL)
   }
-
   res <- cal_adjust(
     object = object,
     .data = .data,
@@ -192,13 +205,12 @@ cal_adjust_update <- function(.data,
       res[, pred_name] <- NULL
     }
 
-    col_names <- as.character(object$levels)
+    col_names <- nm_levels(object$levels)
     factor_levels <- names(object$levels)
 
-    predictions <- res[, col_names] %>%
-      max.col(ties.method = "first") %>%
-      factor_levels[.] %>%
-      factor(levels = factor_levels)
+    predictions <- res[, col_names] |> max.col(ties.method = "first")
+    predictions <- factor_levels[predictions]
+    predictions <- factor(predictions, levels = factor_levels)
 
     res[, pred_name] <- predictions
   }

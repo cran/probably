@@ -69,7 +69,7 @@ int_conformal_full <- function(object, ...) {
 #' @export
 #' @rdname int_conformal_full
 int_conformal_full.default <- function(object, ...) {
-  rlang::abort("No known 'int_conformal_full' methods for this type of object.")
+  cli::cli_abort("No known {.fn int_conformal_full} methods for this type of object.")
 }
 
 #' @export
@@ -144,9 +144,9 @@ predict.int_conformal_full <- function(object, new_data, level = 0.95, ...) {
   # split new_data for row-wise processing
 
   new_nest <-
-    dplyr::bind_cols(new_data, new_pred) %>%
-    dplyr::mutate(.row = dplyr::row_number()) %>%
-    dplyr::group_by(.row) %>%
+    dplyr::bind_cols(new_data, new_pred) |>
+    dplyr::mutate(.row = dplyr::row_number()) |>
+    dplyr::group_by(.row) |>
     tidyr::nest()
 
   # ------------------------------------------------------------------------------
@@ -187,18 +187,18 @@ get_outcome_name <- function(x) {
 }
 
 get_mode <- function(x) {
-  x %>%
-    hardhat::extract_fit_parsnip() %>%
-    purrr::pluck("spec") %>%
+  x |>
+    hardhat::extract_fit_parsnip() |>
+    purrr::pluck("spec") |>
     purrr::pluck("mode")
 }
 
 check_workflow <- function(x, call = rlang::caller_env()) {
   if (!workflows::is_trained_workflow(x)) {
-    rlang::abort("'object' should be a fitted workflow object.", call = call)
+    cli::cli_abort("{.arg object} should be a fitted workflow object.", call = call)
   }
   if (get_mode(x) != "regression") {
-    rlang::abort("'object' should be a regression model.", call = call)
+    cli::cli_abort("{.arg object} should be a regression model.", call = call)
   }
 }
 
@@ -233,11 +233,14 @@ var_model <- function(object, train_data, call = caller_env()) {
     )
 
   if (inherits(var_mod, "try-error")) {
-    msg <- c(
-      "The model to estimate the possible interval length failed with the following message:",
-      "i" = conditionMessage(attr(var_mod, "condition"))
+    cli::cli_abort(
+      c(
+        "The model to estimate the possible interval length failed with the
+        following message:",
+        "i" = "{conditionMessage(attr(var_mod, 'condition'))}"
+      ),
+      call = call
     )
-    rlang::abort(msg, call = call)
   }
 
   var_mod
@@ -278,7 +281,7 @@ trial_fit <- function(trial, trial_data, wflow, level) {
 
   # Compute the abs residuals then more statistics
   tmp_res <-
-    augment(tmp_fit, trial_data) %>%
+    augment(tmp_fit, trial_data) |>
     dplyr::mutate(
       .abs_resid = abs(!!rlang::sym(y_name) - .pred)
     )
@@ -338,7 +341,7 @@ grid_one <- function(new_data, model, train_data, level, ctrl) {
 compute_bound <- function(x, predicted) {
   x <- x[stats::complete.cases(x), ]
   if (all(x$difference < 0)) {
-    rlang::warn("Could not determine bounds.")
+    cli::cli_warn("Could not determine bounds.")
     res <-
       dplyr::tibble(
         .pred_lower = NA_real_,
@@ -421,15 +424,14 @@ optimize_one <- function(new_data, model, train_data, level, ctrl) {
 
 get_root <- function(x, ctrl) {
   if (inherits(x, "try-error")) {
-    msg <- c(
+    cli::cli_warn(c(
       "Could not finish the search process due to the following error:",
       "i" = conditionMessage(attr(x, "condition"))
-    )
-    rlang::warn(msg)
+    ))
     return(NA_real_)
   }
   if (x$iter == ctrl$max_iter) {
-    rlang::warn("Search did not converge.")
+    cli::cli_warn("Search did not converge.")
     return(NA_real_)
   }
   return(x$root)

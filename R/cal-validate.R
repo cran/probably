@@ -42,8 +42,8 @@
 #' # ---------------------------------------------------------------------------
 #' # classification example
 #'
-#' segment_logistic %>%
-#'   rsample::vfold_cv() %>%
+#' segment_logistic |>
+#'   rsample::vfold_cv() |>
 #'   cal_validate_logistic(Class)
 #'
 #' @inheritParams cal_estimate_logistic
@@ -69,7 +69,7 @@ cal_validate_logistic.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -128,8 +128,8 @@ cal_validate_logistic.tune_results <- function(.data,
 #'
 #' library(dplyr)
 #'
-#' segment_logistic %>%
-#'   rsample::vfold_cv() %>%
+#' segment_logistic |>
+#'   rsample::vfold_cv() |>
 #'   cal_validate_isotonic(Class)
 #'
 #' @export
@@ -152,7 +152,7 @@ cal_validate_isotonic.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -213,8 +213,8 @@ cal_validate_isotonic.tune_results <- function(.data,
 #'
 #' library(dplyr)
 #'
-#' segment_logistic %>%
-#'   rsample::vfold_cv() %>%
+#' segment_logistic |>
+#'   rsample::vfold_cv() |>
 #'   cal_validate_isotonic_boot(Class)
 #'
 #' @export
@@ -237,7 +237,7 @@ cal_validate_isotonic_boot.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -297,10 +297,11 @@ cal_validate_isotonic_boot.tune_results <- function(.data,
 #'
 #' library(dplyr)
 #'
-#' segment_logistic %>%
-#'   rsample::vfold_cv() %>%
-#'   cal_validate_beta(Class)
-#'
+#' if (rlang::is_installed("betacal")) {
+#'   segment_logistic |>
+#'     rsample::vfold_cv() |>
+#'     cal_validate_beta(Class)
+#' }
 #' @export
 cal_validate_beta <- function(.data,
                               truth = NULL,
@@ -321,7 +322,7 @@ cal_validate_beta.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -377,8 +378,8 @@ cal_validate_beta.tune_results <- function(.data,
 #'
 #' library(dplyr)
 #'
-#' species_probs %>%
-#'   rsample::vfold_cv() %>%
+#' species_probs |>
+#'   rsample::vfold_cv() |>
 #'   cal_validate_multinomial(Species)
 #'
 #' @export
@@ -401,7 +402,7 @@ cal_validate_multinomial.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -458,7 +459,7 @@ get_problem_type <- function(x) {
   } else if (inherits(x, "Surv")) {
     res <- "censored regression"
   } else {
-    rlang::abort("Cannot determine the type of calibration problem.")
+    cli::cli_abort("Cannot determine the type of calibration problem.")
   }
   res
 }
@@ -470,21 +471,21 @@ check_validation_metrics <- function(metrics, model_mode) {
     } else if (model_mode == "classification") {
       metrics <- yardstick::metric_set(yardstick::brier_class)
     } else {
-      rlang::abort("unknown mode")
+      cli::cli_abort("Unknown mode {.val {model_mode}}")
     }
   } else {
     metric_info <- dplyr::as_tibble(metrics)
     if (model_mode == "regression") {
       if (any(metric_info$class != "numeric_metric")) {
-        rlang::abort("Metric type should be 'numeric_metric'")
+        cli::cli_abort("Metric type should be {.val numeric_metric}")
       }
     } else if (model_mode == "classification") {
       allowed <- c("prob_metric", "class_metric")
       if (any(!(metric_info$class %in% allowed))) {
-        rlang::abort("Metric type should be 'prob_metric' or 'class_metric'")
+        cli::cli_abort("Metric type should be {.val prob_metric} or {.val class_metric}.")
       }
     } else {
-      rlang::abort("unknown mode")
+      cli::cli_abort("Unknown mode {.val {model_mode}}")
     }
   }
   metrics
@@ -502,10 +503,10 @@ cal_validate <- function(rset,
   estimate <- enquo(estimate)
 
   if (is.null(cal_function)) {
-    rlang::abort("No calibration function provided")
+    cli::cli_abort("No calibration function provided")
   }
 
-  outcomes <- dplyr::select(rset$splits[[1]]$data, {{ truth }}) %>% purrr::pluck(1)
+  outcomes <- dplyr::select(rset$splits[[1]]$data, {{ truth }}) |> purrr::pluck(1)
   model_mode <- get_problem_type(outcomes)
 
   metrics <- check_validation_metrics(metrics, model_mode)
@@ -530,8 +531,8 @@ cal_validate <- function(rset,
     if (cals[[1]]$type == "binary") {
       estimate_cols <- cals[[1]]$levels[[1]]
     } else {
-      estimate_cols <- cals[[1]]$levels %>%
-        purrr::map(as_name) %>%
+      estimate_cols <- cals[[1]]$levels |>
+        purrr::map(as_name) |>
         purrr::reduce(c)
     }
   } else if (model_mode == "regression") {
@@ -631,9 +632,9 @@ type_sum.cal_object <- function(x, ...) {
 #' reg_stats <- metric_set(rmse, ccc)
 #'
 #' set.seed(828)
-#' boosting_predictions_oob %>%
+#' boosting_predictions_oob |>
 #'   # Resample with 10-fold cross-validation
-#'   vfold_cv() %>%
+#'   vfold_cv() |>
 #'   cal_validate_linear(truth = outcome, smooth = FALSE, metrics = reg_stats)
 #' @export
 cal_validate_linear <- function(.data,
@@ -655,7 +656,7 @@ cal_validate_linear.resample_results <-
            save_pred = FALSE,
            ...) {
     if (!is.null(truth)) {
-      rlang::warn("'truth' is automaticaly set when this type of object is used.")
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
     }
     truth <- tune::.get_tune_outcome_names(.data)
     # Change splits$data to be the predictions instead of the original
@@ -691,13 +692,116 @@ cal_validate_linear.rset <- function(.data,
   )
 }
 
+# ------------------------------- None -----------------------------------------
+#' Measure performance without using calibration
+#' @inherit cal_validate_logistic
+#' @inheritParams cal_estimate_none
+#' @details
+#' This function exists to have a complete API for all calibration methods. It
+#' returns the same results "with and without calibration" which, in this case,
+#' is always without calibration.
+#'
+#' There are two ways to pass the data in:
+#'
+#'  - If you have a data frame of predictions, an `rset` object can be created
+#'    via \pkg{rsample} functions. See the example below.
+#'
+#'  - If you have already made a resampling object from the original data and
+#'    used it with [tune::fit_resamples()], you can pass that object to the
+#'    calibration function and it will use the same resampling scheme. If a
+#'    different resampling scheme should be used, run
+#'    [tune::collect_predictions()] on the object and use the process in the
+#'    previous bullet point.
+#'
+#' Please note that these functions do not apply to `tune_result` objects. The
+#' notion of "validation" implies that the tuning parameter selection has been
+#' resolved.
+#'
+#' `collect_predictions()` can be used to aggregate the metrics for analysis.
+#'
+#' @seealso [cal_apply()], [cal_estimate_none()]
+#' @examples
+#'
+#' library(dplyr)
+#'
+#' species_probs |>
+#'   rsample::vfold_cv() |>
+#'   cal_validate_none(Species) |>
+#'   collect_metrics()
+#'
+#' @export
+cal_validate_none <- function(.data,
+                              truth = NULL,
+                              estimate = dplyr::starts_with(".pred_"),
+                              metrics = NULL,
+                              save_pred = FALSE,
+                              ...) {
+  UseMethod("cal_validate_none")
+}
+
+#' @export
+#' @rdname cal_validate_none
+cal_validate_none.resample_results <-
+  function(.data,
+           truth = NULL,
+           estimate = dplyr::starts_with(".pred_"),
+           metrics = NULL,
+           save_pred = FALSE,
+           ...) {
+    if (!is.null(truth)) {
+      cli::cli_warn("{.arg truth} is automatically set when this type of object is used.")
+    }
+    truth <- tune::.get_tune_outcome_names(.data)
+    # Change splits$data to be the predictions instead of the original
+    # training data and save as rset
+    .data <- convert_resamples(.data)
+    cal_validate(
+      rset = .data,
+      truth = !!truth,
+      estimate = {{ estimate }},
+      cal_function = "none",
+      metrics = metrics,
+      save_pred = save_pred,
+      ...
+    )
+  }
+
+#' @export
+#' @rdname cal_validate_none
+cal_validate_none.rset <- function(.data,
+                                   truth = NULL,
+                                   estimate = dplyr::starts_with(".pred_"),
+                                   metrics = NULL,
+                                   save_pred = FALSE,
+                                   ...) {
+  cal_validate(
+    rset = .data,
+    truth = {{ truth }},
+    estimate = {{ estimate }},
+    cal_function = "none",
+    metrics = metrics,
+    save_pred = save_pred,
+    ...
+  )
+}
+
+#' @export
+#' @rdname cal_validate_none
+cal_validate_none.tune_results <- function(.data,
+                                           truth = NULL,
+                                           estimate = NULL,
+                                           metrics = NULL,
+                                           save_pred = FALSE,
+                                           ...) {
+  abort_if_tune_result()
+}
 
 # ------------------------------------------------------------------------------
 # convert a resample_results to an rset that can be used by the validate function
 
 convert_resamples <- function(x) {
   predictions <-
-    tune::collect_predictions(x, summarize = TRUE) %>%
+    tune::collect_predictions(x, summarize = TRUE) |>
     dplyr::arrange(.row)
   for (i in seq_along(x$splits)) {
     x$splits[[i]]$data <- predictions
@@ -764,7 +868,7 @@ collect_metrics.cal_rset <- function(x, summarize = TRUE, ...) {
 collect_predictions.cal_rset <- function(x, summarize = TRUE, ...) {
   has_no_preds <- !any(grepl("^\\.predictions", names(x)))
   if (has_no_preds) {
-    rlang::abort("There are no saved prediction columns to collect.", call = NULL)
+    cli::cli_abort("There are no saved prediction columns to collect.")
   }
   res <- NULL
 

@@ -33,7 +33,7 @@
 #' Rina Foygel Barber, Emmanuel J. Candès, Aaditya Ramdas, Ryan J. Tibshirani
 #' "Predictive inference with the jackknife+," _The Annals of Statistics_,
 #' 49(1), 486-507, 2021
-#' @examplesIf !probably:::is_cran_check()
+#' @examplesIf !probably:::is_cran_check() & rlang::is_installed(c("modeldata", "parsnip"))
 #' library(workflows)
 #' library(dplyr)
 #' library(parsnip)
@@ -43,13 +43,13 @@
 #'
 #' set.seed(2)
 #' sim_train <- sim_regression(200)
-#' sim_new <- sim_regression(5) %>% select(-outcome)
+#' sim_new <- sim_regression(5) |> select(-outcome)
 #'
 #' sim_rs <- vfold_cv(sim_train)
 #'
 #' # We'll use a neural network model
 #' mlp_spec <-
-#'   mlp(hidden_units = 5, penalty = 0.01) %>%
+#'   mlp(hidden_units = 5, penalty = 0.01) |>
 #'   set_mode("regression")
 #'
 #' # Use a control function that saves the predictions as well as the models.
@@ -60,7 +60,7 @@
 #'
 #' set.seed(3)
 #' nnet_res <-
-#'   mlp_spec %>%
+#'   mlp_spec |>
 #'   fit_resamples(outcome ~ ., resamples = sim_rs, control = ctrl)
 #'
 #' nnet_int_obj <- int_conformal_cv(nnet_res)
@@ -76,7 +76,7 @@ int_conformal_cv <- function(object, ...) {
 #' @export
 #' @rdname int_conformal_cv
 int_conformal_cv.default <- function(object, ...) {
-  rlang::abort("No known 'int_conformal_cv' methods for this type of object.")
+  cli::cli_abort("No known {.fn int_conformal_cv} methods for this type of object.")
 }
 
 #' @export
@@ -89,7 +89,7 @@ int_conformal_cv.resample_results <- function(object, ...) {
 
   y_name <- tune::.get_tune_outcome_names(object)
   resids <-
-    tune::collect_predictions(object, summarize = TRUE) %>%
+    tune::collect_predictions(object, summarize = TRUE) |>
     dplyr::mutate(.abs_resid = abs(.pred - !!rlang::sym(y_name)))
 
   new_infer_cv(model_list, resids$.abs_resid)
@@ -106,7 +106,7 @@ int_conformal_cv.tune_results <- function(object, parameters, ...) {
   y_name <- tune::.get_tune_outcome_names(object)
 
   resids <-
-    tune::collect_predictions(object, parameters = parameters, summarize = TRUE) %>%
+    tune::collect_predictions(object, parameters = parameters, summarize = TRUE) |>
     dplyr::mutate(.abs_resid = abs(.pred - !!rlang::sym(y_name)))
 
   new_infer_cv(model_list, resids$.abs_resid)
@@ -118,10 +118,10 @@ predict.int_conformal_cv <- function(object, new_data, level = 0.95, ...) {
   mean_pred <-
     purrr::map_dfr(
       object$models,
-      ~ predict(.x, new_data) %>% parsnip::add_rowindex()
-    ) %>%
-    dplyr::group_by(.row) %>%
-    dplyr::summarize(estimate = mean(.pred, na.rm = TRUE), .groups = "drop") %>%
+      ~ predict(.x, new_data) |> parsnip::add_rowindex()
+    ) |>
+    dplyr::group_by(.row) |>
+    dplyr::summarize(estimate = mean(.pred, na.rm = TRUE), .groups = "drop") |>
     purrr::pluck("estimate")
   lower <-
     purrr::map_dbl(
@@ -153,19 +153,19 @@ print.int_conformal_cv <- function(x, ...) {
 
 new_infer_cv <- function(models, resid) {
   if (!is.numeric(resid)) {
-    rlang::abort("Absolute residuals should be numeric")
+    cli::cli_abort("Absolute residuals should be numeric.")
   }
   na_resid <- is.na(resid)
   if (all(na_resid)) {
-    rlang::abort("All of the absolute residuals are missing.")
+    cli::cli_abort("All of the absolute residuals are missing.")
   }
 
   if (!is.list(models)) {
-    rlang::abort("The model list should be... a list")
+    cli::cli_abort("The model list should be... a list.")
   }
   is_wflow <- purrr::map_lgl(models, workflows::is_trained_workflow)
   if (all(!is_wflow)) {
-    rlang::abort(".extracts does not contain fitted workflows")
+    cli::cli_abort("The {.arg .extracts} argument does not contain fitted workflows.")
   }
   if (any(!is_wflow)) {
     models <- models[is_wflow]
@@ -188,15 +188,15 @@ new_infer_cv <- function(models, resid) {
 }
 
 .get_pre_type <- function(x) {
-  cls <- x %>%
-    workflows::extract_preprocessor() %>%
+  cls <- x |>
+    workflows::extract_preprocessor() |>
     class()
   cls <- cls[!grepl("butchered", cls)]
   cls[1]
 }
 
 .get_fit_type <- function(x) {
-  fitted <- x %>% workflows::extract_fit_parsnip()
+  fitted <- x |> workflows::extract_fit_parsnip()
   res <- paste0(class(fitted$spec)[1], " (engine = ", fitted$spec$engine, ")")
   res
 }
@@ -207,10 +207,10 @@ new_infer_cv <- function(models, resid) {
   } else {
     by_vars <- names(prm)
     res <-
-      x %>%
-      dplyr::select(.extracts) %>%
-      tidyr::unnest(.extracts) %>%
-      dplyr::inner_join(prm, by = by_vars) %>%
+      x |>
+      dplyr::select(.extracts) |>
+      tidyr::unnest(.extracts) |>
+      dplyr::inner_join(prm, by = by_vars) |>
       purrr::pluck(".extracts")
   }
   res
@@ -221,21 +221,23 @@ new_infer_cv <- function(models, resid) {
 
 check_resampling <- function(x) {
   rs <- attr(x, "rset_info")
-  if (rs$att$class != "vfold_cv") {
-    msg <- paste0(
-      "The data were resampled using ", rs$label,
-      ". This method was developed for V-fold cross-validation. Interval ",
-      "coverage is unknown for your resampling method."
+  if (any(rs$att$class != "vfold_cv") | any(grepl("group_", rs$att$class))) {
+    cli::cli_warn(
+      c(
+        "The data were resampled using {rs$label}.",
+        "i" = "This method was developed for V-fold cross-validation.",
+        "i" = "Interval coverage is unknown for your resampling method."
+      )
     )
-    rlang::warn(msg)
   } else {
     if (rs$att$repeats > 1) {
-      msg <- paste0(
-        rs$att$repeats, " repeats were used. This method was developed for ",
-        "basic V-fold cross-validation. Interval coverage is unknown for multiple ",
-        "repeats."
+      cli::cli_warn(
+        c(
+          "{rs$att$repeats} repeats were used.",
+          "i" = "This method was developed for basic V-fold cross-validation.",
+          "i" = "Interval coverage is unknown for multiple repeats."
+        )
       )
-      rlang::warn(msg)
     }
   }
   invisible(NULL)
@@ -243,40 +245,37 @@ check_resampling <- function(x) {
 
 check_parameters <- function(x, param, call = rlang::caller_env()) {
   prms <- tune::.get_tune_parameter_names(x)
-  mtr <- tune::collect_metrics(x) %>%
+  mtr <- tune::collect_metrics(x) |>
     dplyr::distinct(.config, !!!rlang::syms(prms))
   remain <- dplyr::inner_join(mtr, param, by = names(param))
   if (nrow(remain) > 1) {
-    msg <-
-      paste0(
-        "The `parameters` argument selected ", nrow(remain), " submodels. Only ",
-        "1 should be selected."
-      )
-    rlang::abort(msg, call = call)
+    cli::cli_abort(
+      "The {.arg parameters} argument selected {nrow(remain)} submodels.
+      Only 1 should be selected.",
+      call = call
+    )
   }
   invisible(NULL)
 }
 
 check_extras <- function(x, call = rlang::caller_env()) {
   if (!any(names(x) == ".extracts")) {
-    msg <-
-      paste0(
-        "The output must contain a column called '.extracts' that contains the ",
-        "fitted workflow objects. See the documentation on the 'extract' ",
-        "argument of the control function (e.g., `control_grid()` or ",
-        "`control_resamples()`, etc.)."
-      )
-    rlang::abort(msg)
+    cli::cli_abort(
+      "The output must contain a column called {.code .extracts} that contains
+       the fitted workflow objects. See the documentation on the {.code extract}
+       argument of the control function (e.g., {.fn control_grid} or
+       {.fn control_resamples}, etc.).",
+      call = call
+    )
   }
   if (!any(names(x) == ".predictions")) {
-    msg <-
-      paste0(
-        "The output must contain a column called '.predictions' that contains the ",
-        "holdout predictions. See the documentation on the 'save_pred' ",
-        "argument of the control function (e.g., `control_grid()` or ",
-        "`control_resamples()`, etc.)."
-      )
-    rlang::abort(msg, cal = call)
+    cli::cli_abort(
+      "The output must contain a column called {.code .predictions} that
+      contains the holdout predictions. See the documentation on the
+      {.code save_pred} argument of the control function (e.g.,
+      {.fn control_grid} or {.fn control_resamples}, etc.).",
+      call = call
+    )
   }
   invisible(NULL)
 }
